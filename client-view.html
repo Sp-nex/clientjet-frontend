@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Client View</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+  <h1 class="text-3xl font-bold text-center mb-6">📦 Your Order Status</h1>
+
+  <div id="orderDetails" class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow text-gray-700 text-lg space-y-2">
+    Loading...
+  </div>
+
+  <script>
+    async function loadOrderById() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      const container = document.getElementById('orderDetails');
+
+      if (!id) {
+        container.innerHTML = '❌ Invalid link.';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/api/orders');
+        const orders = await res.json();
+        const order = orders.find(o => o.id === id);
+
+        if (!order) {
+          container.innerHTML = '❌ Order not found.';
+        } else {
+          container.innerHTML = `
+            <p><strong>Client:</strong> ${order.clientName}</p>
+            <p><strong>Order:</strong> ${order.orderTitle}</p>
+            <p><strong>Status:</strong> ${order.status}</p>
+            <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+          `;
+        }
+      } catch (err) {
+        container.innerHTML = '❌ Error loading order.';
+      }
+    }
+
+    loadOrderById();
+  </script>
+</body>
+</html>
