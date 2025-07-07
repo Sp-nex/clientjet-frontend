@@ -1,0 +1,8 @@
+{
+    "rewrites": [
+      { "source": "/dashboard", "destination": "/dashboard.html" },
+      { "source": "/client-view", "destination": "/client-view.html" },
+      { "source": "/login", "destination": "/login.html" }
+    ]
+  }
+  
