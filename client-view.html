@@ -2,49 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Client View</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-6">
-  <h1 class="text-3xl font-bold text-center mb-6">📦 Your Order Status</h1>
-
-  <div id="orderDetails" class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow text-gray-700 text-lg space-y-2">
-    Loading...
+  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow">
+    <h1 class="text-2xl font-bold mb-4">📄 Your Order</h1>
+    <div id="orderDetails" class="space-y-2 text-lg"></div>
   </div>
 
   <script>
-    async function loadOrderById() {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get('id');
-      const container = document.getElementById('orderDetails');
+    const apiBase = "https://clientjet-api.onrender.com";
 
-      if (!id) {
-        container.innerHTML = '❌ Invalid link.';
+    async function loadClientOrder() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderId = urlParams.get("id");
+
+      if (!orderId) {
+        document.getElementById("orderDetails").innerHTML = "❌ Invalid order link.";
         return;
       }
 
       try {
-        const res = await fetch('http://localhost:3000/api/orders');
-        const orders = await res.json();
-        const order = orders.find(o => o.id === id);
+        const res = await fetch(`${apiBase}/api/orders/${orderId}`);
+        if (!res.ok) throw new Error("Not found");
+        const order = await res.json();
 
-        if (!order) {
-          container.innerHTML = '❌ Order not found.';
-        } else {
-          container.innerHTML = `
-            <p><strong>Client:</strong> ${order.clientName}</p>
-            <p><strong>Order:</strong> ${order.orderTitle}</p>
-            <p><strong>Status:</strong> ${order.status}</p>
-            <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
-          `;
-        }
+        document.getElementById("orderDetails").innerHTML = `
+          <p><strong>Client:</strong> ${order.clientName}</p>
+          <p><strong>Order:</strong> ${order.orderTitle}</p>
+          <p><strong>Status:</strong> ${order.status}</p>
+          <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+        `;
       } catch (err) {
-        container.innerHTML = '❌ Error loading order.';
+        document.getElementById("orderDetails").innerHTML = "❌ Order not found.";
       }
     }
 
-    loadOrderById();
+    loadClientOrder();
   </script>
 </body>
 </html>

@@ -2,13 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Freelancer Dashboard</title>
+  <title>Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-6">
-
-  <!-- 🔒 Login protection -->
   <script>
     if (localStorage.getItem("loggedIn") !== "true") {
       window.location.href = "login.html";
@@ -16,12 +13,11 @@
   </script>
 
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">📋 Freelancer Dashboard</h1>
-    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Logout</button>
+    <h1 class="text-3xl font-bold">📋 Dashboard</h1>
+    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
   </div>
 
-  <!-- Order Form -->
-  <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow mb-10">
+  <div class="bg-white max-w-xl mx-auto p-6 rounded-xl shadow mb-10">
     <form id="orderForm" class="space-y-4">
       <input id="clientName" type="text" placeholder="Client Name" class="w-full border px-4 py-2 rounded" required />
       <input id="orderTitle" type="text" placeholder="Order Title" class="w-full border px-4 py-2 rounded" required />
@@ -30,151 +26,109 @@
         <option>In Progress</option>
         <option>Delivered</option>
       </select>
-      <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Create Order</button>
+      <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded">Create Order</button>
     </form>
-
-    <p id="message" class="mt-4 text-center text-green-600 font-semibold hidden">✅ Order created!</p>
+    <p id="message" class="mt-4 text-green-600 font-semibold hidden">✅ Order created!</p>
   </div>
 
-  <!-- Order List -->
   <div class="max-w-5xl mx-auto">
-    <h2 class="text-2xl font-semibold mb-4">📦 Current Orders</h2>
-    <div id="orderList" class="space-y-4">
-      <!-- Orders will be loaded here -->
-    </div>
+    <h2 class="text-2xl font-semibold mb-4">📦 Orders</h2>
+    <div id="orderList" class="space-y-4"></div>
   </div>
 
-  <!-- JavaScript -->
   <script>
-    // Logout function
+    const apiBase = "https://clientjet-api.onrender.com";
+
     function logout() {
       localStorage.removeItem("loggedIn");
       window.location.href = "login.html";
     }
 
-    const form = document.getElementById('orderForm');
-    const message = document.getElementById('message');
-    const orderList = document.getElementById('orderList');
+    const form = document.getElementById("orderForm");
+    const message = document.getElementById("message");
+    const orderList = document.getElementById("orderList");
 
-    // Submit form and create order
-    form.addEventListener('submit', async function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
-
       const order = {
-        clientName: document.getElementById('clientName').value,
-        orderTitle: document.getElementById('orderTitle').value,
-        status: document.getElementById('orderStatus').value,
-        date: new Date().toISOString()
+        clientName: document.getElementById("clientName").value,
+        orderTitle: document.getElementById("orderTitle").value,
+        status: document.getElementById("orderStatus").value,
+        date: new Date().toISOString(),
       };
 
-      try {
-        const res = await fetch('http://localhost:3000/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(order)
-        });
+      const res = await fetch(`${apiBase}/api/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order),
+      });
 
-        const savedOrder = await res.json();
-
-        if (res.ok) {
-          message.classList.remove('hidden');
-          form.reset();
-          loadOrders();
-        } else {
-          alert('❌ Failed to save order.');
-        }
-      } catch (err) {
-        alert('❌ Error connecting to server.');
+      if (res.ok) {
+        form.reset();
+        message.classList.remove("hidden");
+        loadOrders();
+      } else {
+        alert("Failed to create order.");
       }
     });
 
-    // Load all orders
     async function loadOrders() {
-      try {
-        const res = await fetch('http://localhost:3000/api/orders');
-        const orders = await res.json();
+      const res = await fetch(`${apiBase}/api/orders`);
+      const orders = await res.json();
+      orderList.innerHTML = "";
 
-        orderList.innerHTML = '';
+      orders.forEach((order, index) => {
+        const card = document.createElement("div");
+        card.className = "bg-white p-4 border rounded shadow";
 
-        if (orders.length === 0) {
-          orderList.innerHTML = '<p class="text-gray-600">No orders yet.</p>';
-          return;
-        }
+        card.innerHTML = `
+          <p><strong>#${index + 1}</strong></p>
+          <p><strong>Client:</strong> ${order.clientName}</p>
+          <p><strong>Order:</strong> ${order.orderTitle}</p>
+          <p>
+            <strong>Status:</strong>
+            <select onchange="updateOrderStatus('${order.id}', this.value)" class="border px-2 py-1 rounded text-sm">
+              <option ${order.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option ${order.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+            </select>
+          </p>
+          <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+          <div class="mt-2 flex items-center gap-2">
+            <a href="client-view.html?id=${order.id}" target="_blank" class="text-blue-600 underline">🔗 View Link</a>
+            <button onclick="copyToClipboard('${order.id}')" class="bg-blue-600 text-white text-sm px-3 py-1 rounded">Copy</button>
+            <button onclick="deleteOrder('${order.id}')" class="bg-red-600 text-white text-sm px-3 py-1 rounded">Delete</button>
+          </div>
+        `;
 
-        orders.forEach((order, index) => {
-          const card = document.createElement('div');
-          card.className = 'bg-white p-4 border rounded shadow';
-
-          card.innerHTML = `
-            <p><strong>#${index + 1}</strong></p>
-            <p><strong>Client:</strong> ${order.clientName}</p>
-            <p><strong>Order:</strong> ${order.orderTitle}</p>
-            <p>
-              <strong>Status:</strong>
-              <select onchange="updateOrderStatus('${order.id}', this.value)" class="border px-2 py-1 rounded text-sm">
-                <option ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                <option ${order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                <option ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-              </select>
-            </p>
-            <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
-
-            <div class="mt-2 flex items-center gap-2">
-              <a href="client-view.html?id=${order.id}" target="_blank" class="text-blue-600 underline">🔗 View Link</a>
-              <button onclick="copyToClipboard('${order.id}')" class="bg-blue-600 text-white text-sm px-3 py-1 rounded hover:bg-blue-700">📋 Copy</button>
-              <button onclick="deleteOrder('${order.id}')" class="bg-red-600 text-white text-sm px-3 py-1 rounded hover:bg-red-700">❌ Delete</button>
-            </div>
-          `;
-
-          orderList.appendChild(card);
-        });
-      } catch (err) {
-        orderList.innerHTML = '<p class="text-red-600">⚠️ Failed to load orders.</p>';
-      }
-    }
-
-    // Update order status
-    async function updateOrderStatus(orderId, newStatus) {
-      try {
-        const res = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: newStatus })
-        });
-        if (!res.ok) throw new Error();
-        loadOrders();
-      } catch {
-        alert('❌ Failed to update order status.');
-      }
-    }
-
-    // Delete order
-    async function deleteOrder(orderId) {
-      const confirmDelete = confirm("Are you sure you want to delete this order?");
-      if (!confirmDelete) return;
-
-      try {
-        const res = await fetch(`http://localhost:3000/api/orders/${orderId}`, {
-          method: 'DELETE'
-        });
-        if (!res.ok) throw new Error();
-        loadOrders();
-      } catch {
-        alert('❌ Failed to delete order.');
-      }
-    }
-
-    // Copy link to clipboard
-    function copyToClipboard(orderId) {
-      const fullLink = `${window.location.origin}/client-view.html?id=${orderId}`;
-      navigator.clipboard.writeText(fullLink).then(() => {
-        alert("✅ Link copied to clipboard:\n" + fullLink);
-      }).catch(err => {
-        alert("❌ Failed to copy link.");
+        orderList.appendChild(card);
       });
     }
 
-    // Load on page load
+    async function updateOrderStatus(orderId, newStatus) {
+      await fetch(`${apiBase}/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+    }
+
+    async function deleteOrder(orderId) {
+      const res = await fetch(`${apiBase}/api/orders/${orderId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        loadOrders();
+      }
+    }
+
+    function copyToClipboard(orderId) {
+      const fullLink = `${window.location.origin}/client-view.html?id=${orderId}`;
+      navigator.clipboard.writeText(fullLink).then(() => {
+        alert("✅ Link copied: " + fullLink);
+      });
+    }
+
     loadOrders();
   </script>
 </body>
