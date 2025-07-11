@@ -1,36 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Login - Admin Access</title>
+  <meta charset="UTF-8" />
+  <title>Admin Login</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-6 rounded-xl shadow max-w-sm w-full">
-    <h2 class="text-2xl font-bold mb-4 text-center">🔒 Admin Login</h2>
-    <form id="loginForm" class="space-y-4">
-      <input type="password" id="password" placeholder="Enter password" class="w-full px-4 py-2 border rounded" required />
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
-    </form>
-    <p id="error" class="text-red-600 text-sm mt-3 hidden">❌ Incorrect password</p>
-  </div>
+<body class="h-screen flex items-center justify-center bg-gray-100">
+  <form id="loginForm" class="bg-white p-6 rounded-xl shadow-md w-80">
+    <h2 class="text-xl font-bold mb-4 text-center">Admin Login</h2>
+    <input type="text" id="username" placeholder="Username" class="w-full p-2 mb-3 border rounded" required>
+    <input type="password" id="password" placeholder="Password" class="w-full p-2 mb-3 border rounded" required>
+    <button type="submit" class="bg-blue-500 text-white w-full py-2 rounded">Login</button>
+    <p id="error" class="text-red-500 text-sm mt-2 hidden">Invalid credentials</p>
+  </form>
 
   <script>
-    const form = document.getElementById('loginForm');
-    const error = document.getElementById('error');
+    const correctUsername = "admin";
+    const correctPassword = "secret123";
 
-    form.addEventListener('submit', function(e) {
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
       e.preventDefault();
-      const password = document.getElementById('password').value;
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
 
-      // Set your admin password here:
-      const adminPassword = "admin123";
-
-      if (password === adminPassword) {
-        localStorage.setItem("loggedIn", "true");
+      if (username === correctUsername && password === correctPassword) {
+        localStorage.setItem("isLoggedIn", "true");
         window.location.href = "dashboard.html";
       } else {
-        error.classList.remove('hidden');
+        document.getElementById("error").classList.remove("hidden");
       }
     });
   </script>

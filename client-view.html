@@ -14,32 +14,27 @@
   <script>
     const apiBase = "https://clientjet-api.onrender.com";
 
-    async function loadClientOrder() {
+    
       const urlParams = new URLSearchParams(window.location.search);
       const orderId = urlParams.get("id");
-
-      if (!orderId) {
-        document.getElementById("orderDetails").innerHTML = "❌ Invalid order link.";
-        return;
-      }
-
-      try {
-        const res = await fetch(`${apiBase}/api/orders/${orderId}`);
-        if (!res.ok) throw new Error("Not found");
-        const order = await res.json();
-
-        document.getElementById("orderDetails").innerHTML = `
-          <p><strong>Client:</strong> ${order.clientName}</p>
-          <p><strong>Order:</strong> ${order.orderTitle}</p>
-          <p><strong>Status:</strong> ${order.status}</p>
-          <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+      
+      fetch(`${apiBase}/api/orders`)
+        .then((res) => res.json())
+        .then((orders) => {
+          const order = orders.find((o) => o.id === orderId);
+      if (order) {
+        document.getElementById("order").innertext = `
+          Client: ${order.clientName}
+          Order: ${order.orderTitle}
+          Status: ${order.status}
+          Date: ${new Date(order.date).toLocaleString()}
         `;
-      } catch (err) {
-        document.getElementById("orderDetails").innerHTML = "❌ Order not found.";
+      } else {
+        document.getElementById("orders").innertext = "❌ Order not found.";
       }
-    }
+    });
 
-    loadClientOrder();
+
   </script>
 </body>
 </html>

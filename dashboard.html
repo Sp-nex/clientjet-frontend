@@ -1,3 +1,9 @@
+<script>
+  if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+  }
+</script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,6 +61,7 @@
         orderTitle: document.getElementById("orderTitle").value,
         status: document.getElementById("orderStatus").value,
         date: new Date().toISOString(),
+        id :Math.random().toString(36).substring(2, 9) 
       };
 
       const res = await fetch(`${apiBase}/api/orders`, {
@@ -133,3 +140,11 @@
   </script>
 </body>
 </html>
+<button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded mt-4">Logout</button>
+
+<script>
+  function logout() {
+    localStorage.removeItem("isLoggedIn");
+    window.location.href = "login.html";
+  }
+</script>
